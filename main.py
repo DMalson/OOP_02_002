@@ -1,9 +1,11 @@
-# Функции
-# создание кулинарной книги
 class cookbook():
     def __init__(self):
         self.book = {}
+        self.dishes = []
+        self.person_count = 0
+        self.shop_list = {}
 
+# Заполнение книги данными из файла установленной структуры
     def fill_book(self, file_name):
         if len(self.book) > 0:
             return
@@ -29,21 +31,37 @@ class cookbook():
                     self.book[dish] = recipe
                     file_obj.readline()
 
+# Формирование списка покупок
     def get_shop_list_by_dishes(self, dishes, person_count):
-        shop_list = {}
-        for dish in dishes:
+        del self.dishes[:]
+        self.dishes.extend(dishes)
+        self.person_count = person_count
+        self.shop_list.clear()
+        for dish in self.dishes:
             if dish in self.book.keys():
-                print(dish)
+                for ingredient in self.book[dish]:
+                    if ingredient['ingredient_name'] in self.shop_list.keys() and self.shop_list[ingredient['ingredient_name']]['measure'] == ingredient['measure']:
+                        self.shop_list[ingredient['ingredient_name']]['quantity'] += ingredient['quantity'] * person_count
+                    else :
+                        self.shop_list.setdefault(ingredient['ingredient_name'], {'measure': ingredient['measure'], 'quantity': ingredient['quantity'] * person_count})
+        newstring = ''
+        for key, value in self.shop_list.items():
+            newstring += key + " : " + str(value) + '\n'
+        return newstring
 
-
-
-# Расчёт ингредиентов
-
-
+# Переопределение печати книги рецептов
+    def __str__(self):
+        newstring = ''
+        for dish, ingredients in self.book.items():
+            newstring += dish + '\n'
+            for ingredient in ingredients:
+                newstring += str(ingredient) + '\n'
+        return newstring
 
 
 # Основной код
 my_cookbook = cookbook()
 my_cookbook.fill_book("recipes.txt")
-print(my_cookbook.book)
-my_cookbook.get_shop_list_by_dishes(['Запеченный картофель', 'Омлет'], 2)
+print(my_cookbook)
+print(my_cookbook.get_shop_list_by_dishes(['Запеченный картофель', 'Омлет'], 2))
+print(my_cookbook.shop_list)
